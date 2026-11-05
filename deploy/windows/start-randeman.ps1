@@ -13,6 +13,7 @@
 #   C:\randeman\config\.env               تنظیمات (RANDEMAN_DATABASE_URL و ...)
 #   PostgreSQL موجود روی 127.0.0.1:5432   پایگاه مستقل randeman
 #   ClamAV موجود روی 127.0.0.1:3310       اسکن مستندات (در دسترس نبودن = قرنطینه)
+# اجرا با خطای ExecutionPolicy: powershell -ExecutionPolicy Bypass -File <مسیر اسکریپت>
 
 param(
     [string]$Root = "C:\randeman",
@@ -72,7 +73,7 @@ if (-not (Test-Path $EnvFile)) { throw "فایل تنظیمات یافت نشد:
 $pg = Test-NetConnection 127.0.0.1 -Port 5432 -WarningAction SilentlyContinue
 if (-not $pg.TcpTestSucceeded) { throw "PostgreSQL روی 127.0.0.1:5432 در دسترس نیست — پایگاه randeman و حساب‌ها ساخته شده باشند (بخش ۴ سند نصب)" }
 
-# --- بارگذاری تنظیمات از فایل .env (اسرار فقط همین‌جا) ---
+# بارگذاری تنظیمات از فایل .env (اسرار فقط همین‌جا)
 Get-Content $EnvFile | ForEach-Object {
     if ($_ -match '^\s*RANDEMAN_([A-Z0-9_]+)\s*=\s*(.*)\s*$') {
         [System.Environment]::SetEnvironmentVariable("RANDEMAN_$($Matches[1])", $Matches[2], "Process")
@@ -80,6 +81,10 @@ Get-Content $EnvFile | ForEach-Object {
 }
 # حالت تک‌پورت: ارائه رابط ساخته‌شده از همان پورت API
 [System.Environment]::SetEnvironmentVariable("RANDEMAN_SERVE_DIST_DIR", $DistDir, "Process")
+# این اسکریپت همیشه HTTP ساده ارائه می‌دهد؛ کوکی Secure باعث حلقه ورود می‌شود → فقط همین فرایند غیرفعال می‌شود
+# (در عملیات با HTTPS/Caddy این اسکریپت اجرا نمی‌شود و .env عملیاتی RANDEMAN_COOKIE_SECURE=true دارد)
+[System.Environment]::SetEnvironmentVariable("RANDEMAN_COOKIE_SECURE", "false", "Process")
+Write-Host "ℹ️ حالت تک‌پورت HTTP روی $Port — کوکی بدون Secure (فقط راه‌اندازی سریع/آزمون داخلی)" -ForegroundColor DarkCyan
 
 # --- جلوگیری از اجرای دوباره ---
 if (Test-Path $PidFile) {

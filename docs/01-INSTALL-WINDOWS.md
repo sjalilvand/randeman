@@ -139,5 +139,7 @@ randeman.internal.example.ir {
 ```
 
 - اسکریپت تنظیمات را از `config\.env` می‌خواند، `RANDEMAN_SERVE_DIST_DIR` را به مسیر dist رابط تنظیم می‌کند و Uvicorn را روی `0.0.0.0:8095` با ۲ Worker اجرا می‌کند.
+- چون این حالت HTTP ساده است، اسکریپت برای همان فرایند `RANDEMAN_COOKIE_SECURE=false` می‌کند تا ورود در مرورگر کار کند؛ فایل `.env` دست‌نخورده می‌ماند و در عملیات HTTPS همچنان `true` است.
+- اگر خطای ExecutionPolicy گرفتید: `powershell -ExecutionPolicy Bypass -File C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1`
 - در فایروال، پورت 8095 فقط برای محدوده داخلی باز شود (تصمیم ۲۵.۲ — دسترسی شبکه داخلی/VPN).
 - این حالت جایگزین معماری عملیاتی (Caddy→Nginx 8087→API 8011) نیست؛ برای HTTPS سازمانی همان مسیر سند ۱۵.۳ مبنا است.
