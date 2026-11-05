@@ -40,7 +40,7 @@ Python Worker مستقل (Windows Service)
 | تقویم | jdatetime (بک‌اند) + jalaali-js (رابط) — نمایش شمسی، ذخیره UTC |
 | امنیت رمز | Argon2id + نشست Cookie امن (HttpOnly/SameSite) |
 | اسکن فایل | ClamAV (clamd روی 3310) |
-| آزمون | pytest (۲۲ سناریو) |
+| آزمون | pytest (۲۴ سناریو) |
 
 ## ساختار مخزن
 
@@ -48,9 +48,10 @@ Python Worker مستقل (Windows Service)
 backend/    سرویس FastAPI، مدل‌ها، سرویس‌های دامنه، Worker، Seed، آزمون‌ها
 frontend/   رابط React/TS فارسی RTL (14 صفحه)
 deploy/     اسکریپت‌های Windows (NSSM)، پشتیبان‌گیری، Nginx، PostgreSQL
-docs/       راهنمای نصب، معماری، پشتیبان‌گیری، سناریوهای پذیرش
-.github/    CI (pytest + build)
+docs/       راهنمای نصب، معماری، پشتیبان‌گیری، سناریوهای پذیرش + ci-workflow.yml
 ```
+
+> **فعال‌سازی CI:** فایل `docs/ci-workflow.yml` را در مسیر `.github/workflows/ci.yml` قرار دهید (نیازمند توکن با scope «workflow» است).
 
 ## شروع سریع (توسعه)
 
@@ -59,6 +60,7 @@ docs/       راهنمای نصب، معماری، پشتیبان‌گیری، �
 cd backend
 python -m venv .venv && .venv\Scripts\activate      # ویندوز
 pip install -r requirements.txt
+alembic upgrade head                                 # ایجاد ساختار پایگاه
 python -m app.seed --with-demo                       # نقش‌ها + داده نمونه
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8011
 
