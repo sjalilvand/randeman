@@ -20,6 +20,30 @@ $dirs = @("$Root\releases\v1.0.0\backend","$Root\releases\v1.0.0\frontend","$Roo
 $dirs | ForEach-Object { New-Item -ItemType Directory -Force -Path $_ | Out-Null }
 ```
 
+## ۲ب. دریافت بسته انتشار مستقیم از گیت‌هاب (روش توصیه‌شده)
+
+کل بسته — شامل رابط ساخته‌شده (`frontend\dist`) — در مخزن است؛ نیازی به Node روی سرور نیست:
+
+```powershell
+# اگر git نصب نیست:
+winget install --id Git.Git -e --source winget
+
+# اگر مسیر وجود ندارد یا خالی است — clone مستقیم:
+git clone https://github.com/sjalilvand/randeman.git C:\randeman\releases\v1.0.0
+
+# اگر مسیر از قبل چیزی دارد — clone در مسیر موقت و کدگذاری بدون حذف چیزی:
+git clone https://github.com/sjalilvand/randeman.git $env:TEMP\randeman-src
+robocopy $env:TEMP\randeman-src C:\randeman\releases\v1.0.0 /E /XD .git
+Remove-Item $env:TEMP\randeman-src -Recurse -Force
+
+# به‌روزرسانی نسخه‌های بعدی:
+git -C C:\randeman\releases\v1.0.0 pull
+```
+
+> جایگزین بدون نصب git (باز هم مستقیم از گیت‌هاب):
+> `Invoke-WebRequest https://github.com/sjalilvand/randeman/archive/refs/heads/main.zip -OutFile $env:TEMP\randeman.zip`
+> سپس `Expand-Archive $env:TEMP\randeman.zip C:\randeman\releases` و تغییر نام `randeman-main` به `v1.0.0`.
+
 بسته انتشار (خروجی CI یا build محلی) داخل `releases\v1.0.0` باز شود؛ `runtime\venv` مستقل می‌ماند.
 
 ## ۳. محیط مجازی مستقل
@@ -68,12 +92,14 @@ icacls C:\randeman\config\.env /inheritance:r /grant:r "svc_randeman:(R)" "Admin
 
 اسرار فقط همین‌جا باشند؛ متغیر محیطی مخزن امن نیست.
 
-## ۶. ساخت رابط (ترجیحاً در CI)
+## ۶. ساخت رابط (فقط در صورت تغییر فرانت‌اند)
+
+از مخزن، نسخه ساخته‌شده رابط در `frontend\dist` کامیت شده و با clone مستقیم ارائه می‌شود (بخش ۲ب) — روی سرور به Node نیازی نیست. فقط اگر کد رابط را تغییر دادید:
 
 ```powershell
 cd C:\randeman\releases\v1.0.0\frontend
 npm ci
-npm run build       # خروجی dist
+npm run build       # خروجی dist — سپس در مخزن کامیت شود (تصمیم بخش ۲ب)
 ```
 
 ## ۷. سرویس‌های Windows با NSSM

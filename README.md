@@ -90,8 +90,18 @@ npm run dev        # پروکسی /api به پورت 8011
 
 ## راه‌اندازی روی سرور — پورت 8095 (تک‌پورت)
 
+ابتدا بسته را مستقیم از گیت‌هاب بگیرید (رابط ساخته‌شده `frontend/dist` هم در مخزن است — نیازی به Node روی سرور نیست):
+
 ```powershell
-# PowerShell 7 روی Windows Server — پس از اجرای docs/01-INSTALL-WINDOWS.md:
+git clone https://github.com/sjalilvand/randeman.git C:\randeman\releases\v1.0.0   # اگر مسیر خالی/ناموجود است
+# به‌روزرسانی بعدی:  git -C C:\randeman\releases\v1.0.0 pull
+# اگر مسیر از قبل چیزی دارد: docs/01-INSTALL-WINDOWS.md بخش ۲ب
+```
+
+سپس پس از اجرای docs/01-INSTALL-WINDOWS.md (venv، پایگاه، config\.env):
+
+```powershell
+# PowerShell 7 روی Windows Server:
 C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1            # شروع روی 8095
 C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1 -Status     # وضعیت + آزمون سلامت (PostgreSQL/ClamAV/API)
 C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1 -Stop       # توقف
