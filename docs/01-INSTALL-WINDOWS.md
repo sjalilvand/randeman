@@ -64,7 +64,28 @@ C:\randeman\runtime\venv\Scripts\python.exe -m pip install --upgrade pip
 C:\randeman\runtime\venv\Scripts\pip.exe install -r C:\randeman\releases\v1.0.0\backend\requirements.txt
 ```
 
-> اگر `py` شناخته نشد، مسیر کامل: `& "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe" -m venv C:\randeman\runtime\venv`
+> اگر `py` شناخته نشد، اسکریپت آماده `deploy\windows\setup-venv.ps1` را اجرا کنید — Python را از مسیرهای استاندارد و رجیستری پیدا می‌کند و venv را می‌سازد.
+
+### اگر PyPI در دسترس نبود (timeout روی files.pythonhosted.org)
+
+در شبکه‌هایی که به PyPI دسترسی مستقیم ندارند، دو گزینه:
+
+**الف) آینه PyPI:**
+
+```powershell
+C:\randeman\runtime\venv\Scripts\pip.exe install -r C:\randeman\releases\v1.0.0\backend\requirements.txt -i https://mirror-pypi.runflare.org/simple
+# گزینه‌های دیگر: https://pypi.iranserver.com/simple  |  https://pypi.tuna.tsinghua.edu.cn/simple  |  https://mirrors.aliyun.com/pypi/simple/
+```
+
+**ب) نصب کاملاً آفلاین از بسته Release گیت‌هاب** (وابستگی‌های ویندوز x64 / Python 3.12):
+
+```powershell
+Invoke-WebRequest https://github.com/sjalilvand/randeman/releases/download/v1.0.0/randeman-wheels-win-py312.zip -OutFile $env:TEMP\wheels.zip
+Expand-Archive $env:TEMP\wheels.zip -DestinationPath C:\randeman\wheels -Force
+C:\randeman\runtime\venv\Scripts\pip.exe install --no-index --find-links C:\randeman\wheels -r C:\randeman\releases\v1.0.0\backend\requirements.txt
+```
+
+> هرگز `pip` یا `python.exe` بدون مسیر کامل اجرا نشود — ممکن است به Python سامانه‌های دیگر (مانند rosepsy) برسد.
 
 > هرگز در venv سامانه‌های دیگر (C:\rosepsy\runtime\venv یا C:\survey-system\venv) نصب نشود.
 
