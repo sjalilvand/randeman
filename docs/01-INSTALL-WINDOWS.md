@@ -48,11 +48,23 @@ git -C C:\randeman\releases\v1.0.0 pull
 
 ## ۳. محیط مجازی مستقل
 
+اگر Python نصب نیست (پیش‌نیاز — نسخه 3.12):
+
+```powershell
+winget install --id Python.Python.3.12 -e --source winget
+# ⚠️ پس از نصب، PowerShell را ببندید و دوباره باز کنید تا PATH به‌روز شود
+py --version    # باید 3.12.x نشان دهد
+```
+
+سپس ساخت venv:
+
 ```powershell
 py -3.12 -m venv C:\randeman\runtime\venv
 C:\randeman\runtime\venv\Scripts\python.exe -m pip install --upgrade pip
 C:\randeman\runtime\venv\Scripts\pip.exe install -r C:\randeman\releases\v1.0.0\backend\requirements.txt
 ```
+
+> اگر `py` شناخته نشد، مسیر کامل: `& "$env:LOCALAPPDATA\Programs\Python\Python312\python.exe" -m venv C:\randeman\runtime\venv`
 
 > هرگز در venv سامانه‌های دیگر (C:\rosepsy\runtime\venv یا C:\survey-system\venv) نصب نشود.
 
