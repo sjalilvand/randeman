@@ -1,0 +1,154 @@
+{
+  "_راهنما": "داده اولیه واقعی سازمان — این فایل را با اطلاعات قطعی ویرایش کنید و «python -m app.seed» را اجرا نمایید. رمز اولیه همه حساب‌ها: Randeman@1404 (تصمیم ۲۵.۲ — پیش از بهره‌برداری تغییر کند)",
+  "organization_units": [
+    {"code": "MNG", "name": "مدیریت", "parent_code": null, "manager_username": "ceo"},
+    {"code": "IT",  "name": "فناوری اطلاعات و زیرساخت", "parent_code": "MNG", "manager_username": "m.it"},
+    {"code": "DEV", "name": "توسعه نرم‌افزار", "parent_code": "MNG", "manager_username": "m.dev"},
+    {"code": "RND", "name": "پژوهش و نظرسنجی", "parent_code": "MNG", "manager_username": "m.rnd"},
+    {"code": "PSY", "name": "خدمات روان‌شناختی", "parent_code": "MNG", "manager_username": "m.psy"},
+    {"code": "FIN", "name": "مالی و اداری", "parent_code": "MNG", "manager_username": "m.fin"},
+    {"code": "HR",  "name": "منابع انسانی", "parent_code": "MNG", "manager_username": "m.hr"}
+  ],
+  "users": [
+    {"username": "ceo",      "first_name": "مهدی",    "last_name": "رستگار",   "position": "مدیر ارشد سازمان",              "role": "senior_manager",  "unit_code": "MNG", "manager_username": null},
+    {"username": "m.it",     "first_name": "امیر",    "last_name": "شریفی",    "position": "مدیر فناوری اطلاعات و زیرساخت",  "role": "unit_manager",    "unit_code": "IT",  "manager_username": "ceo"},
+    {"username": "dep.it",   "first_name": "نگار",    "last_name": "سلطانی",   "position": "جانشین مدیر IT — کارشناس شبکه",  "role": "unit_manager",    "unit_code": "IT",  "manager_username": "m.it"},
+    {"username": "m.dev",    "first_name": "رضا",     "last_name": "کریمی",    "position": "مدیر توسعه نرم‌افزار",           "role": "unit_manager",    "unit_code": "DEV", "manager_username": "ceo"},
+    {"username": "dev1",     "first_name": "علی",     "last_name": "رحیمی",    "position": "کارشناس ارشد نرم‌افزار",         "role": "employee",        "unit_code": "DEV", "manager_username": "m.dev"},
+    {"username": "dev2",     "first_name": "سارا",    "last_name": "محمدی",    "position": "کارشناس نرم‌افزار",              "role": "employee",        "unit_code": "DEV", "manager_username": "m.dev"},
+    {"username": "m.rnd",    "first_name": "زهرا",    "last_name": "نوری",     "position": "مدیر پژوهش و نظرسنجی",           "role": "unit_manager",    "unit_code": "RND", "manager_username": "ceo"},
+    {"username": "rnd1",     "first_name": "حسین",    "last_name": "قاسمی",    "position": "کارشناس پژوهش و داده",           "role": "employee",        "unit_code": "RND", "manager_username": "m.rnd"},
+    {"username": "m.psy",    "first_name": "مریم",    "last_name": "احمدی",    "position": "مدیر خدمات روان‌شناختی",         "role": "unit_manager",    "unit_code": "PSY", "manager_username": "ceo"},
+    {"username": "psy1",     "first_name": "لیلا",    "last_name": "کاظمی",    "position": "روان‌شناس و کارشناس خدمات",      "role": "employee",        "unit_code": "PSY", "manager_username": "m.psy"},
+    {"username": "m.fin",    "first_name": "فرهاد",   "last_name": "موسوی",    "position": "مدیر مالی و اداری",              "role": "unit_manager",    "unit_code": "FIN", "manager_username": "ceo"},
+    {"username": "fin1",     "first_name": "سمیرا",   "last_name": "خسروی",    "position": "کارشناس مالی و اسناد",           "role": "employee",        "unit_code": "FIN", "manager_username": "m.fin"},
+    {"username": "m.hr",     "first_name": "فرزانه",  "last_name": "اکبری",    "position": "مدیر منابع انسانی",              "role": "unit_manager",    "unit_code": "HR",  "manager_username": "ceo"},
+    {"username": "hr1",      "first_name": "نیما",    "last_name": "صادقی",    "position": "کارشناس منابع انسانی",           "role": "employee",        "unit_code": "HR",  "manager_username": "m.hr"},
+    {"username": "pmo",      "first_name": "بهنام",   "last_name": "تهرانی",   "position": "مسئول تعالی / دفتر پروژه",       "role": "pmo",             "unit_code": "MNG", "manager_username": "ceo"},
+    {"username": "observer", "first_name": "رویا",    "last_name": "مرادی",    "position": "ناظر سازمانی",                   "role": "observer",        "unit_code": "MNG", "manager_username": "ceo"},
+    {"username": "auditor",  "first_name": "کاوه",    "last_name": "رادمنش",   "position": "ممیز داخلی",                     "role": "auditor",         "unit_code": "MNG", "manager_username": "ceo"}
+  ],
+  "projects": [
+    {
+      "code": "RND-P01",
+      "title": "استقرار و راه‌اندازی سامانه راندمان",
+      "description": "استقرار سامانه مدیریت عملکرد، وظایف، پروژه‌ها و مستندات روی سرور موجود با PostgreSQL مستقل، ClamAV و پشتیبان‌گیری روزانه؛ بهره‌برداری کامل واحدها از سامانه.",
+      "goal": "بهره‌برداری عملیاتی سامانه راندمان برای همه واحدها تا پایان فصل جاری با تضمین امنیت و پشتیبان قابل بازیابی",
+      "category": "تحول دیجیتال",
+      "manager_username": "m.it",
+      "lead_unit_code": "IT",
+      "member_unit_codes": ["DEV", "FIN", "HR"],
+      "status": "active",
+      "priority": "high",
+      "start_date": "2026-09-01",
+      "end_date": "2026-12-30",
+      "members": ["dep.it", "dev1", "m.hr"],
+      "tasks": [
+        {"title": "استقرار سرویس‌ها روی سرور عملیاتی (پورت 8095)", "assignee": "dep.it", "status": "in_progress", "progress": 60, "weight": 2.0, "priority": "high", "due_date": "2026-11-15"},
+        {"title": "پیکربندی ClamAV (پورت 3310) و آزمون قرنطینه", "assignee": "dep.it", "status": "in_progress", "progress": 75, "weight": 1.5, "priority": "high", "due_date": "2026-11-12"},
+        {"title": "راه‌اندازی پشتیبان‌گیری روزانه و آزمون بازیابی", "assignee": "m.it", "status": "assigned", "progress": 20, "weight": 2.0, "priority": "high", "due_date": "2026-11-20"},
+        {"title": "آموزش کاربران و راه‌اندازی واحدها در سامانه", "assignee": "m.hr", "status": "draft", "progress": 0, "weight": 1.0, "priority": "medium", "due_date": "2026-12-10"}
+      ]
+    },
+    {
+      "code": "RND-P02",
+      "title": "توسعه و یکپارچه‌سازی سامانه نظرسنجی سازمانی",
+      "description": "توسعه سامانه نظرسنجی (survey-system): پرسش‌نامه‌های استاندارد، گزارش تحلیلی و یکپارچگی با پورتال مرکز؛ حفظ انزوای زیرساختی مطابق سند.",
+      "goal": "اجرای نظرسنجی‌های سازمانی با گزارش تحلیلی استاندارد و اتصال یک‌پارچه به پورتال",
+      "category": "توسعه محصول",
+      "manager_username": "m.rnd",
+      "lead_unit_code": "RND",
+      "member_unit_codes": ["DEV"],
+      "status": "active",
+      "priority": "medium",
+      "start_date": "2026-08-15",
+      "end_date": "2027-02-28",
+      "members": ["rnd1", "dev2"],
+      "tasks": [
+        {"title": "طراحی پرسش‌نامه‌های استاندارد سازمانی", "assignee": "m.rnd", "status": "completed", "progress": 100, "weight": 1.5, "priority": "medium", "due_date": "2026-10-01"},
+        {"title": "توسعه ماژول گزارش تحلیلی نظرسنجی", "assignee": "rnd1", "status": "in_progress", "progress": 45, "weight": 2.0, "priority": "high", "due_date": "2026-12-05"},
+        {"title": "اتصال ورود یکپارچه به پورتال مرکز", "assignee": "dev2", "status": "assigned", "progress": 10, "weight": 1.0, "priority": "medium", "due_date": "2027-01-15"}
+      ]
+    },
+    {
+      "code": "RND-P03",
+      "title": "توسعه پورتال خدمات الکترونیک مرکز",
+      "description": "توسعه پورتال خدمات (rosecenter): احراز هویت یکپارچه، پنل خدمات کارکنان و نسخه موبایل؛ ارائه از مسیر Caddy/Nginx موجود بدون دست‌کاری سامانه‌های دیگر.",
+      "goal": "ارائه خدمات الکترونیک کارکنان از طریق پورتال واحد با تجربه موبایل کامل",
+      "category": "توسعه محصول",
+      "manager_username": "m.dev",
+      "lead_unit_code": "DEV",
+      "member_unit_codes": ["IT"],
+      "status": "active",
+      "priority": "high",
+      "start_date": "2026-07-01",
+      "end_date": "2027-01-30",
+      "members": ["dev1", "dep.it"],
+      "tasks": [
+        {"title": "احراز هویت یکپارچه کاربران پورتال", "assignee": "dev1", "status": "in_progress", "progress": 70, "weight": 2.0, "priority": "high", "due_date": "2026-11-25"},
+        {"title": "پنل خدمات کارکنان (مرخصی، حکم، مساعده)", "assignee": "dev2", "status": "in_progress", "progress": 35, "weight": 2.0, "priority": "high", "due_date": "2026-12-20"},
+        {"title": "بهینه‌سازی نسخه موبایل و دسترس‌پذیری", "assignee": "dev1", "status": "assigned", "progress": 0, "weight": 1.5, "priority": "medium", "due_date": "2027-01-20"}
+      ]
+    },
+    {
+      "code": "RND-P04",
+      "title": "توسعه خدمات روان‌شناختی آنلاین",
+      "description": "توسعه سامانه خدمات روان‌شناختی (rosepsy): نوبت‌دهی آنلاین، حفظ محرمانگی داده مراجعان و گزارش جلسات؛ رعایت کامل سطوح محرمانگی رکوردی سند.",
+      "goal": "ارائه خدمات روان‌شناختی با نوبت‌دهی آنلاین و حفاظت کامل از محرمانگی مراجعان",
+      "category": "خدمات تخصصی",
+      "manager_username": "m.psy",
+      "lead_unit_code": "PSY",
+      "member_unit_codes": ["DEV"],
+      "status": "active",
+      "priority": "medium",
+      "start_date": "2026-08-01",
+      "end_date": "2027-03-30",
+      "members": ["psy1", "dev2"],
+      "tasks": [
+        {"title": "ماژول نوبت‌دهی آنلاین مراجعان", "assignee": "dev2", "status": "in_progress", "progress": 50, "weight": 2.0, "priority": "high", "due_date": "2026-12-10"},
+        {"title": "بازبینی امنیت و محرمانگی داده مراجعان", "assignee": "m.psy", "status": "assigned", "progress": 15, "weight": 1.5, "priority": "high", "due_date": "2027-01-10"},
+        {"title": "گزارش جلسات و تابلو رهگیری مراجع", "assignee": "psy1", "status": "draft", "progress": 0, "weight": 1.0, "priority": "medium", "due_date": "2027-02-15"}
+      ]
+    },
+    {
+      "code": "RND-P05",
+      "title": "ارتقای زیرساخت، پشتیبان و امنیت ورودی",
+      "description": "ممیزی فایروال و پورت‌ها، مهار ورودی HTTPS (Caddy/Nginx)، پایش منابع سرور مشترک (۲۳٫۴۴GB RAM / ۱۲ vCPU) و استقرار چرخه پشتیبان با RPO ۲۴ ساعت.",
+      "goal": "کاهش ریسک‌های زیرساختی، پشتیبان قابل بازیابی و حفاظت ورودی سازمان بدون اختلال در سامانه‌های فعال",
+      "category": "زیرساخت و امنیت",
+      "manager_username": "m.it",
+      "lead_unit_code": "IT",
+      "member_unit_codes": ["DEV", "FIN"],
+      "status": "active",
+      "priority": "high",
+      "start_date": "2026-06-15",
+      "end_date": "2026-12-31",
+      "members": ["dep.it", "dev1"],
+      "tasks": [
+        {"title": "ممیزی فایروال و بستن پورت‌های غیرضروری از اینترنت", "assignee": "dep.it", "status": "completed", "progress": 100, "weight": 1.5, "priority": "high", "due_date": "2026-10-20"},
+        {"title": "مستندسازی و آزمون بازیابی پشتیبان (RPO/RTO)", "assignee": "m.it", "status": "in_progress", "progress": 40, "weight": 2.0, "priority": "high", "due_date": "2026-11-30"},
+        {"title": "پایش منابع سرور و بودجه‌بندی ظرفیت", "assignee": "dev1", "status": "in_progress", "progress": 25, "weight": 1.0, "priority": "medium", "due_date": "2026-12-15"}
+      ]
+    },
+    {
+      "code": "RND-P06",
+      "title": "مستندسازی فرایندها و دیجیتالی‌سازی اسناد سازمانی",
+      "description": "شناسایی فرایندهای کلیدی، ایجاد مخزن مستندات در سامانه راندمان با اسکن امن و سطوح محرمانگی، و آرشیو دیجیتال اسناد اداری.",
+      "goal": "مخزن واحد مستندات سازمانی با جریان بررسی و تأیید و آرشیو قابل جست‌وجو",
+      "category": "تحول دیجیتال",
+      "manager_username": "m.fin",
+      "lead_unit_code": "FIN",
+      "member_unit_codes": ["HR", "RND"],
+      "status": "draft",
+      "priority": "medium",
+      "start_date": "2026-11-01",
+      "end_date": "2027-04-30",
+      "members": ["fin1", "hr1", "rnd1"],
+      "tasks": [
+        {"title": "شناسایی و نگاشت فرایندهای کلیدی", "assignee": "rnd1", "status": "assigned", "progress": 0, "weight": 1.5, "priority": "medium", "due_date": "2026-12-25"},
+        {"title": "تعیین سطوح محرمانگی و قواعد دسترسی اسناد", "assignee": "m.fin", "status": "draft", "progress": 0, "weight": 1.0, "priority": "medium", "due_date": "2027-01-15"},
+        {"title": "آرشیو دیجیتال اسناد اداری سال جاری", "assignee": "fin1", "status": "draft", "progress": 0, "weight": 1.0, "priority": "low", "due_date": "2027-03-15"}
+      ]
+    }
+  ]
+}

@@ -35,6 +35,27 @@ def ensure_dirs() -> None:
         Path(p).mkdir(parents=True, exist_ok=True)
 
 
+def _looks_text(head: bytes) -> bool:
+    """بررسی متنی بودن محتوا — پنجره ۱۶ بایتی ممکن است نویسه چندبایتی (فارسی) را نصف کند.
+
+    فقط «دنباله ناقص در انتهای پنجره» مجاز است؛ بایت نامعتبر در میانه یعنی فایل باینری.
+    """
+    try:
+        head.decode("utf-8")
+        return True
+    except UnicodeDecodeError as exc:
+        # نویسه چندبایتی حداکثر ۴ بایت؛ بریدگی فقط در انتها قابل قبول است
+        return exc.start >= len(head) - 3 and _valid_utf8_prefix(head[:exc.start])
+
+
+def _valid_utf8_prefix(head: bytes) -> bool:
+    try:
+        head.decode("utf-8")
+        return True
+    except UnicodeDecodeError:
+        return False
+
+
 def validate_upload(*, filename: str, size: int, head: bytes) -> str:
     """بررسی پسوند، حجم و امضای محتوا — خروجی: پسوند."""
     ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
@@ -50,11 +71,7 @@ def validate_upload(*, filename: str, size: int, head: bytes) -> str:
             magic_ok = True
             break
     if not magic_ok:
-        try:
-            head.decode("utf-8")
-            magic_ok = True  # متن ساده
-        except UnicodeDecodeError:
-            magic_ok = False
+        magic_ok = _looks_text(head)  # متن ساده (شامل فارسی — نویسه چندبایتی)
     if not magic_ok:
         raise HTTPException(status_code=422, detail="ساختار فایل با پسوند اعلام‌شده سازگار نیست")
     return ext
@@ -120,6 +137,20 @@ def add_version(db: OrmSession, *, base: Document, new_stored: str, size: int, s
     db.add(doc)
     db.flush()
     return doc
+
+
+def clamd_ping(timeout: int = 3) -> tuple[bool, str]:
+    """آزمون دسترس‌پذیری clamd روی پورت 3310 (فرمان PING) — برای readyz و نصب (سند ۱۵.۸)."""
+    if not settings.clamd_host:
+        return False, "clamd پیکربندی نشده است"
+    try:
+        with socket.create_connection((settings.clamd_host, settings.clamd_port), timeout=timeout) as s:
+            s.sendall(b"zPING\0")
+            resp = s.recv(256).decode(errors="ignore").strip("\x00").strip()
+    except (OSError, socket.timeout) as exc:
+        return False, f"در دسترس نیست: {exc}"
+    ok = resp == "PONG"
+    return ok, (resp if ok else f"پاسخ غیرمنتظره: {resp[:120]}")
 
 
 def clamd_scan(path: Path) -> tuple[bool, str]:

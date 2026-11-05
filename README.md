@@ -53,6 +53,19 @@ docs/       راهنمای نصب، معماری، پشتیبان‌گیری، �
 
 > **فعال‌سازی CI:** فایل `docs/ci-workflow.yml` را در مسیر `.github/workflows/ci.yml` قرار دهید (نیازمند توکن با scope «workflow» است).
 
+## داده اولیه (واقعی — جایگزین داده دمو)
+
+```bash
+cd backend
+python -m app.seed                        # داده واقعی از app/initial_data.json (پیش‌فرض)
+python -m app.seed --with-demo            # فقط برای آزمون توسعه: داده نمونه
+python -m app.seed --initial-data C:/path/to/initial_data.json   # فایل اختصاصی
+```
+
+- `backend/app/initial_data.json` قابل ویرایش است: ۷ واحد سازمانی، ۱۷ کاربر (با جانشین)، **شش پروژه واقعی (RND-P01…P06)** و ۱۹ وظیفه. اجرا idempotent است.
+- رمز اولیه همه حساب‌ها: `Randeman@1404` — پیش از بهره‌برداری تغییر کند (تصمیم ۲۵.۲).
+- حساب مدیر سامانه: `admin`
+
 ## شروع سریع (توسعه)
 
 ```bash
@@ -61,7 +74,7 @@ cd backend
 python -m venv .venv && .venv\Scripts\activate      # ویندوز
 pip install -r requirements.txt
 alembic upgrade head                                 # ایجاد ساختار پایگاه
-python -m app.seed --with-demo                       # نقش‌ها + داده نمونه
+python -m app.seed                                   # داده واقعی سازمان
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8011
 
 # Worker (پنجره دیگر)
@@ -73,10 +86,28 @@ npm ci
 npm run dev        # پروکسی /api به پورت 8011
 ```
 
-**حساب‌های نمونه** (داده دمو): `admin` (مدیر سامانه)، `ceo` (مدیر ارشد)، `m.it` (مدیر واحد)، `pm` (مدیر پروژه)، `emp1`، `emp2`، `emp3` (کارشناس)، `pmo`، `observer`، `auditor` — رمز همه: `Randeman@1404`
-> فقط برای آزمایش؛ پیش از بهره‌برداری رمزها تغییر یابد.
-
 آدرس‌ها: رابط `http://localhost:5173` — OpenAPI `http://127.0.0.1:8011/docs`
+
+## راه‌اندازی روی سرور — پورت 8095 (تک‌پورت)
+
+```powershell
+# PowerShell 7 روی Windows Server — پس از اجرای docs/01-INSTALL-WINDOWS.md:
+C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1            # شروع روی 8095
+C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1 -Status     # وضعیت + آزمون سلامت (PostgreSQL/ClamAV/API)
+C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1 -Stop       # توقف
+C:\randeman\releases\v1.0.0\deploy\windows\test-clamav.ps1                # آزمون ClamAV پورت 3310 (PING/OK/EICAR)
+```
+
+حالت تک‌پورت 8095، رابط React ساخته‌شده و API را هم‌زمان ارائه می‌دهد (`RANDEMAN_SERVE_DIST_DIR`). برای عملیات پایدار با HTTPS، معماری سند ۱۵ (Caddy:443 → Nginx:8087 → API:8011) مبنا است.
+
+## آزمون سلامت (سند ۱۵.۸)
+
+```bash
+curl http://127.0.0.1:8095/healthz   # {"status":"ok"}
+curl http://127.0.0.1:8095/readyz    # وضعیت db، ضربان Worker و دسترس‌پذیری ClamAV 3310
+```
+
+گزارش کامل تصمیم‌های مدیریتی (دامنه HTTPS، مهلت گزارش، RPO/RTO و…): `docs/04-DECISIONS-25-2.md`
 
 ## پایگاه داده
 

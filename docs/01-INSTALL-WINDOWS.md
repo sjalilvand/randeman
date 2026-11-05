@@ -49,7 +49,13 @@ $env:RANDEMAN_DATABASE_URL = "postgresql+psycopg://randeman_migrator:...@127.0.0
 C:\randeman\runtime\venv\Scripts\python.exe -m alembic upgrade head
 ```
 
-پس از Migration، `randeman_app` مجوزهای DML می‌گیرد (در همان اسکریپت SQL آمده است).
+پس از Migration، مجوزهای DML با اسکریپت دوم اعمال می‌شود:
+
+```powershell
+& "C:\rosepsy\runtime\pgsql\bin\psql.exe" -h 127.0.0.1 -U postgres -d randeman -f C:\randeman\releases\v1.0.0\deploy\postgres\02-post-migration-grants.sql
+```
+
+> این اسکریپت پس از هر Migration آینده نیز باید اجرا شود. سپس داده اولیه واقعی: `python -m app.seed` (فایل `backend\app\initial_data.json` — ۷ واحد، ۱۷ کاربر، شش پروژه RND-P01…P06).
 
 ## ۵. پیکربندی
 
@@ -116,7 +122,22 @@ randeman.internal.example.ir {
 ## ۹. آزمون پس از نصب
 
 1. `curl http://127.0.0.1:8011/healthz` → ok
-2. `curl http://127.0.0.1:8011/readyz` → وضعیت db و Worker
-3. ورود با حساب مدیر سامانه، ایجاد کاربر، ایجاد وظیفه، بارگذاری فایل تستی (EICAR رد شود، PDF سالم آماده شود)
-4. توقف RandemanAPI برای ۳۰ ثانیه — Worker نباید متوقف شود (AC-13)
-5. اجرای `backup-daily.ps1` و یک بازیابی آزمایشی در محیط پاک (AC-14)
+2. `curl http://127.0.0.1:8011/readyz` → وضعیت db، Worker و **ClamAV (پورت 3310)**
+3. آزمون کامل آنتی‌ویروس: `deploy\windows\test-clamav.ps1` (PING → PONG، فایل سالم → OK، نمونه EICAR → FOUND)
+4. ورود با حساب مدیر سامانه، ایجاد کاربر، ایجاد وظیفه، بارگذاری فایل تستی (EICAR رد شود، PDF سالم آماده شود)
+5. توقف RandemanAPI برای ۳۰ ثانیه — Worker نباید متوقف شود (AC-13)
+6. اجرای `backup-daily.ps1` و یک بازیابی آزمایشی در محیط پاک (AC-14)
+
+## ۱۰. راه‌اندازی سریع روی پورت 8095 (تک‌پورت — تصمیم ضمیمه ۲۵.۲)
+
+برای بالا آوردن کل برنامه (رابط + API) از یک پورت، بدون Nginx:
+
+```powershell
+& C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1              # شروع
+& C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1 -Status      # وضعیت و آزمون سلامت
+& C:\randeman\releases\v1.0.0\deploy\windows\start-randeman.ps1 -Stop        # توقف
+```
+
+- اسکریپت تنظیمات را از `config\.env` می‌خواند، `RANDEMAN_SERVE_DIST_DIR` را به مسیر dist رابط تنظیم می‌کند و Uvicorn را روی `0.0.0.0:8095` با ۲ Worker اجرا می‌کند.
+- در فایروال، پورت 8095 فقط برای محدوده داخلی باز شود (تصمیم ۲۵.۲ — دسترسی شبکه داخلی/VPN).
+- این حالت جایگزین معماری عملیاتی (Caddy→Nginx 8087→API 8011) نیست؛ برای HTTPS سازمانی همان مسیر سند ۱۵.۳ مبنا است.

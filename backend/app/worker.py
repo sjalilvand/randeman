@@ -36,8 +36,6 @@ def heartbeat(db) -> None:  # noqa: ANN001
 def claim_job(db) -> BackgroundJob | None:  # noqa: ANN001
     now = utcnow()
     if engine.dialect.name == "postgresql":
-        from sqlalchemy.orm import load_opt  # noqa: F401
-
         with db.begin_nested():
             job = db.execute(
                 select(BackgroundJob)

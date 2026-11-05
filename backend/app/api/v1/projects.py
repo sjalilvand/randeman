@@ -13,7 +13,7 @@ from app.api.v1.deps import get_actor_ip, get_current_user, require_roles
 from app.core.db import get_db
 from app.core.permissions import can_view_project, has_role, project_visibility_filter
 from app.models.base import utcnow
-from app.models.enums import ProjectStatus
+from app.models.enums import ProjectStatus, TaskStatus
 from app.models.ops import Blocker, BlockerStatus
 from app.models.project import Milestone, Project, ProjectMember, ProjectUnit
 from app.models.task import Task

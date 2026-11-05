@@ -46,11 +46,23 @@ class Settings(BaseSettings):
     worker_lease_seconds: int = 600
     worker_heartbeat_seconds: int = 60
 
-    # تقویم و زمان
+    # ارائه رابط ساخته‌شده از همان پورت API — حالت تک‌پورت (تصمیم ۲۵.۲ و پورت 8095)
+    # مسیر پوشه dist رابط؛ خالی = غیرفعال (استقرار عملیاتی: Nginx 8087)
+    serve_dist_dir: str = ""
+
+    # تقویم و زمان (تصمیم ۲۵.۲: شروع هفته شنبه، مهلت گزارش پنجشنبه ۱۲:۰۰ تهران)
     timezone_name: str = "Asia/Tehran"
     default_weekly_capacity_hours: float = 40.0
-    report_deadline_weekday: int = 5   # 5=جمعه (weekday پایتون)
+    report_deadline_weekday: int = 3   # weekday پایتون: شنبه=5 ... پنجشنبه=3
     report_deadline_hour: int = 12
+    report_approval_deadline_hour: int = 12  # مهلت بررسی مدیر واحد: شنبه ۱۲:۰۰
+
+    # اعلان ایمیلی — فاز ۲ (تصمیم ۲۵.۲: SMTP داخلی سازمان؛ خالی = اعلان درون‌برنامه‌ای فقط)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
 
     # امنیت
     docs_enabled: bool = True           # در عملیات False تا OpenAPI عمومی نشود

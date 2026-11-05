@@ -1,8 +1,15 @@
-"""Seed داده اولیه: نقش‌ها، حساب‌ها، ساختار نمونه و تعریف شاخص‌ها (سند ۱۹ فاز ۰)."""
+"""Seed داده اولیه: نقش‌ها، حساب‌ها، ساختار سازمانی واقعی و شش پروژه (تصمیم ۲۵.۲ — سند ۱۹ فاز ۰).
+
+- حالت پیش‌فرض: داده واقعی از فایل initial_data.json (واحدهای سازمانی، کاربران، ۶ پروژه)
+- --with-demo: داده نمونه قدیمی فقط برای آزمون توسعه
+- idempotent: اجرای مکرر رکورد تکراری نمی‌سازد
+"""
 from __future__ import annotations
 
 import argparse
+import json
 import sys
+from pathlib import Path
 
 from sqlalchemy import select
 
@@ -11,7 +18,7 @@ from app.core.db import SessionLocal
 from app.core.security import hash_password
 from app.models.calendar import MetricDefinition, SystemSetting
 from app.models.enums import Priority, ProjectStatus, TaskStatus
-from app.models.project import Project, ProjectMember
+from app.models.project import Project, ProjectMember, ProjectUnit
 from app.models.task import Task, TaskStatusHistory
 from app.models.user import OrganizationUnit, Role, User, UserRole
 
@@ -41,8 +48,10 @@ METRICS = [
      "ساعات تخمینی تخصیص‌یافته در دوره ÷ ظرفیت قابل استفاده × ۱۰۰", "سند ۷.۵ — پوشش داده نیز نمایش داده می‌شود"),
 ]
 
+INITIAL_DATA_PATH = Path(__file__).with_name("initial_data.json")
 
-def seed(with_demo: bool) -> None:
+
+def seed(with_demo: bool, initial_data: Path | None) -> None:
     db = SessionLocal()
     try:
         # نقش‌ها
@@ -56,7 +65,7 @@ def seed(with_demo: bool) -> None:
             if db.scalar(select(MetricDefinition).where(MetricDefinition.key == key)) is None:
                 db.add(MetricDefinition(key=key, title_fa=title, formula=formula, description=desc))
 
-        # تنظیمات پیش‌فرض
+        # تنظیمات پیش‌فرض (تصمیم ۲۵.۲: مهلت گزارش پنجشنبه ۱۲:۰۰ تهران)
         for key, value in {
             "report_deadline_weekday": settings.report_deadline_weekday,
             "report_deadline_hour": settings.report_deadline_hour,
@@ -79,14 +88,114 @@ def seed(with_demo: bool) -> None:
             db.flush()
             admin_role = db.scalar(select(Role).where(Role.code == "sys_admin"))
             db.add(UserRole(user_id=admin.id, role_id=admin_role.id))
+        db.flush()
 
+        if initial_data is not None or (not with_demo and INITIAL_DATA_PATH.exists()):
+            _seed_real_data(db, initial_data or INITIAL_DATA_PATH)
         if with_demo:
             _seed_demo(db)
         db.commit()
         print("✅ Seed انجام شد.")
-        print("   حساب مدیر سامانه: admin / Randeman@1404  (فقط برای آزمایش؛ در عملیات رمز را عوض کنید)")
+        print("   حساب مدیر سامانه: admin / Randeman@1404  (تصمیم ۲۵.۲ — پیش از بهره‌برداری رمز عوض شود)")
     finally:
         db.close()
+
+
+def _seed_real_data(db, path: Path) -> None:  # noqa: ANN001
+    """داده واقعی سازمان از فایل JSON — واحدها، کاربران، شش پروژه و وظایف."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    role = {c: db.scalar(select(Role).where(Role.code == c)) for c, _, _ in ROLES}
+
+    # ۱) واحدهای سازمانی
+    units: dict[str, OrganizationUnit] = {}
+    for u in data.get("organization_units", []):
+        org = db.scalar(select(OrganizationUnit).where(OrganizationUnit.code == u["code"]))
+        if org is None:
+            org = OrganizationUnit(name=u["name"], code=u["code"])
+            db.add(org)
+            db.flush()
+        if u.get("parent_code") and org.parent_id is None:
+            org.parent_id = None  # پس از ساخت همه واحدها تنظیم می‌شود
+        units[u["code"]] = org
+    for u in data.get("organization_units", []):
+        if u.get("parent_code") and not units[u["code"]].parent_id:
+            units[u["code"]].parent_id = units[u["parent_code"]].id
+    db.flush()
+
+    # ۲) کاربران
+    users: dict[str, User] = {u.username: u for u in db.scalars(select(User)).all()}
+    for p in data.get("users", []):
+        u = users.get(p["username"])
+        if u is None:
+            u = User(username=p["username"], password_hash=hash_password("Randeman@1404"),
+                     first_name=p["first_name"], last_name=p["last_name"], position=p["position"],
+                     primary_unit_id=units[p["unit_code"]].id if p.get("unit_code") else None)
+            db.add(u)
+            db.flush()
+            users[p["username"]] = u
+        if p.get("role") and role.get(p["role"]):
+            has = db.scalar(select(UserRole).where(UserRole.user_id == u.id, UserRole.role_id == role[p["role"]].id))
+            if has is None:
+                db.add(UserRole(user_id=u.id, role_id=role[p["role"]].id))
+    db.flush()
+    for p in data.get("users", []):  # سلسله‌مراتب پس از ساخت همه کاربران
+        if p.get("manager_username") and users[p["username"]].direct_manager_id is None:
+            users[p["username"]].direct_manager_id = users[p["manager_username"]].id
+    for u in data.get("organization_units", []):  # مدیر هر واحد
+        if u.get("manager_username"):
+            units[u["code"]].manager_id = users[u["manager_username"]].id
+    db.flush()
+
+    # ۳) شش پروژه واقعی و وظایف
+    n_projects = n_tasks = 0
+    for pr in data.get("projects", []):
+        project = db.scalar(select(Project).where(Project.code == pr["code"]))
+        if project is not None:
+            continue
+        project = Project(
+            code=pr["code"], title=pr["title"], description=pr.get("description"),
+            goal=pr.get("goal"), category=pr.get("category"),
+            manager_id=users[pr["manager_username"]].id if pr.get("manager_username") else None,
+            lead_unit_id=units[pr["lead_unit_code"]].id if pr.get("lead_unit_code") else None,
+            status=ProjectStatus(pr.get("status", "draft")),
+            priority=Priority(pr.get("priority", "medium")),
+            start_date=pr.get("start_date"), end_date=pr.get("end_date"),
+            created_by=users["admin"].id,
+        )
+        db.add(project)
+        db.flush()
+        n_projects += 1
+        if pr.get("manager_username"):
+            db.add(ProjectMember(project_id=project.id, user_id=users[pr["manager_username"]].id,
+                                 role_in_project="manager"))
+        for m in pr.get("members", []):
+            if not db.scalar(select(ProjectMember).where(ProjectMember.project_id == project.id,
+                                                         ProjectMember.user_id == users[m].id)):
+                db.add(ProjectMember(project_id=project.id, user_id=users[m].id, role_in_project="member"))
+        for uc in pr.get("member_unit_codes", []):
+            db.add(ProjectUnit(project_id=project.id, unit_id=units[uc].id,
+                               participation_note="واحد مشارکت‌کننده"))
+        for j, t in enumerate(pr.get("tasks", []), start=1):
+            assignee = users[t["assignee"]]
+            task = Task(
+                code=f"T-{pr['code'].replace('RND-', '')}-{j}",
+                title=t["title"], project_id=project.id,
+                unit_id=assignee.primary_unit_id, assignee_id=assignee.id,
+                created_by=users[pr["manager_username"]].id if pr.get("manager_username") else users["admin"].id,
+                base_due_date=t.get("due_date"), current_due_date=t.get("due_date"),
+                status=TaskStatus(t.get("status", "draft")), progress=int(t.get("progress", 0)),
+                weight=float(t.get("weight", 1.0)), priority=Priority(t.get("priority", "medium")),
+            )
+            db.add(task)
+            db.flush()
+            db.add(TaskStatusHistory(task_id=task.id, from_status=None, to_status=task.status.value,
+                                     actor_id=task.created_by, reason="ایجاد اولیه"))
+            n_tasks += 1
+    if n_projects:
+        print(f"   داده واقعی: {len(units)} واحد سازمانی، {len(data.get('users', []))} کاربر، "
+              f"{n_projects} پروژه و {n_tasks} وظیفه از {path.name} ایجاد شد (رمز کاربران: Randeman@1404).")
+    else:
+        print("   داده واقعی از قبل موجود بود — تغییری اعمال نشد.")
 
 
 def _seed_demo(db) -> None:  # noqa: ANN001
@@ -108,14 +217,14 @@ def _seed_demo(db) -> None:  # noqa: ANN001
 
     it = db.scalar(select(OrganizationUnit).where(OrganizationUnit.name == "فناوری اطلاعات"))
     if it is None:
-        root = OrganizationUnit(name="مدیریت", code="MNG")
+        root = OrganizationUnit(name="مدیریت", code="MNG-DEMO")
         db.add(root)
         db.flush()
         ceo = make_user("ceo", "سارا", "محمدی", "senior_manager", "مدیر ارشد", root, None)
         root.manager_id = ceo.id
-        it = OrganizationUnit(name="فناوری اطلاعات", code="IT", parent_id=root.id)
-        hr = OrganizationUnit(name="منابع انسانی", code="HR", parent_id=root.id)
-        fin = OrganizationUnit(name="مالی و اداری", code="FIN", parent_id=root.id)
+        it = OrganizationUnit(name="فناوری اطلاعات", code="IT-DEMO", parent_id=root.id)
+        hr = OrganizationUnit(name="منابع انسانی", code="HR-DEMO", parent_id=root.id)
+        fin = OrganizationUnit(name="مالی و اداری", code="FIN-DEMO", parent_id=root.id)
         db.add_all([it, hr, fin])
         db.flush()
         m_it = make_user("m.it", "رضا", "کریمی", "unit_manager", "مدیر واحد فناوری اطلاعات", it, ceo)
@@ -164,15 +273,18 @@ def _seed_demo(db) -> None:  # noqa: ANN001
                 db.flush()
                 db.add(TaskStatusHistory(task_id=t.id, from_status=None, to_status=t_status.value,
                                          actor_id=pm.id, reason="داده نمونه"))
-        print("   داده نمونه: واحدها، کاربران (رمز: Randeman@1404) و ۶ پروژه ایجاد شد.")
+        print("   داده نمونه (DEMO): واحدها، کاربران (رمز: Randeman@1404) و ۶ پروژه نمونه ایجاد شد.")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Seed سامانه راندمان")
-    parser.add_argument("--with-demo", action="store_true", help="ایجاد داده نمونه (واحدها، کاربران، ۶ پروژه)")
+    parser.add_argument("--with-demo", action="store_true",
+                        help="داده نمونه قدیمی (فقط برای آزمون توسعه)")
+    parser.add_argument("--initial-data", type=Path, default=None,
+                        help=f"مسیر فایل داده واقعی (پیش‌فرض: {INITIAL_DATA_PATH.name})")
     args = parser.parse_args()
     try:
-        seed(with_demo=args.with_demo)
+        seed(with_demo=args.with_demo, initial_data=args.initial_data)
     except Exception as exc:  # noqa: BLE001
         print(f"خطا در seed: {exc}", file=sys.stderr)
         raise
